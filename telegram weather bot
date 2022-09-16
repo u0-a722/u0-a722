@@ -1,0 +1,66 @@
+'''
+██╗░░░██╗██╗░░░██╗  ██████╗░░█████╗░████████╗  ██████╗░██╗░░░██╗
+██║░░░██║██║░░░██║  ██╔══██╗██╔══██╗╚══██╔══╝  ██╔══██╗╚██╗░██╔╝
+╚██╗░██╔╝╚██╗░██╔╝  ██████╦╝██║░░██║░░░██║░░░  ██████╦╝░╚████╔╝░
+░╚████╔╝░░╚████╔╝░  ██╔══██╗██║░░██║░░░██║░░░  ██╔══██╗░░╚██╔╝░░
+░░╚██╔╝░░░░╚██╔╝░░  ██████╦╝╚█████╔╝░░░██║░░░  ██████╦╝░░░██║░░░
+░░░╚═╝░░░░░░╚═╝░░░  ╚═════╝░░╚════╝░░░░╚═╝░░░  ╚═════╝░░░░╚═╝░░░
+
+████████╗██╗░░██╗███████╗░██████╗██╗██████╗░
+╚══██╔══╝██║░░██║██╔════╝██╔════╝██║██╔══██╗
+░░░██║░░░███████║█████╗░░╚█████╗░██║██║░░██║
+░░░██║░░░██╔══██║██╔══╝░░░╚═══██╗██║██║░░██║
+░░░██║░░░██║░░██║███████╗██████╔╝██║██████╔╝
+░░░╚═╝░░░╚═╝░░╚═╝╚══════╝╚═════╝░╚═╝╚═════╝░
+'''
+
+# importing needed libraries
+from aiogram import Bot, Dispatcher, executor, types
+import python_weather
+
+# bot init
+bot = Bot(token='5543472308:AAGQHGe6SrgllmvMVHNGVcs-C921OQEqYZY')
+dp = Dispatcher(bot)
+client = python_weather.Client(format=python_weather.IMPERIAL)
+
+# weather stat
+@dp.message_handler(commands=['weather'])
+async def weather(message: types.Message):
+
+    # set your current city
+    weather = await client.get('Your city')
+    
+    # convert to celsius
+    wet = (weather.current.temperature - 32) / 1.8
+    fwet = (weather.current.feels_like - 32) / 1.8
+    
+    # crating answer messages
+    r_msg = f'Its {round(wet)} degrees outside' + '\n'
+    r_msg += f'Feels like {round(fwet)} degrees' + '\n'
+    r_msg += str(weather.current.local_time)  # weather update time
+    
+    await message.answer(r_msg)
+    
+# bot making status   
+@dp.message_handler(commands=['status'])
+async def stat(message: types.Message):
+    await message.answer("Bot is making.\n~5%\nby TheSid")
+
+# print current commands of bot
+@dp.message_handler(commands=['commands'])
+async def commands(message: types.Message):
+    await message.answer('/weather - show current weather\n/status - bot making status\nEcho mode is on.')
+    
+# this is the answer message for /start
+@dp.message_handler(commands=['start'])
+async def starting(message: types.Message):
+    await message.answer('qq)')
+
+# echo mode
+@dp.message_handler()
+async def starting(message: types.Message):
+    await message.answer(message.text)
+
+# skipping updates of aiogram
+if __name__ == '__main__':
+    executor.start_polling(dp, skip_updates=True)
